@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "einar-ioc": {
+      "source": "Ignaciojeria/ioc-template",
+      "sourceType": "github",
+      "computedHash": "28ec7e3d30353e9a36f104a3b8d47dad2bee7dc0a5f343d548adf7af7178c323"
+    }
+  }
+}
