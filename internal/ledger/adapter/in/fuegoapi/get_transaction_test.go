@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"ledger-service/internal/ledger/application/ports/in"
+	domainerrors "ledger-service/internal/ledger/domain/errors"
 )
 
 type mockGetTransaction struct {
@@ -37,5 +38,19 @@ func TestNewGetTransaction(t *testing.T) {
 
 	if rec.Code != http.StatusOK {
 		t.Errorf("got status %v want %v", rec.Code, http.StatusOK)
+	}
+}
+
+func TestNewGetTransaction_NotFound_Returns404(t *testing.T) {
+	server := createTestServer(t)
+	var uc in.GetTransactionExecutor = &mockGetTransaction{err: domainerrors.ErrTransactionNotFound}
+	NewGetTransaction(server, uc)
+
+	req, _ := http.NewRequest(http.MethodGet, "/transactions/660e8400-e29b-41d4-a716-446655440001", nil)
+	rec := httptest.NewRecorder()
+	server.Manager.Mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Errorf("got status %v want %v", rec.Code, http.StatusNotFound)
 	}
 }

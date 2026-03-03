@@ -1,0 +1,1 @@
+npx skills add https://github.com/sanky369/vibe-building-skills --skill color-system

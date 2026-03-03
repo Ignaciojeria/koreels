@@ -1,4 +1,9 @@
-# Entry points
+# ledger-service
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/Ignaciojeria/ledger-service)](https://goreportcard.com/report/github.com/Ignaciojeria/ledger-service)
+[![codecov](https://codecov.io/gh/Ignaciojeria/ledger-service/graph/badge.svg)](https://codecov.io/gh/Ignaciojeria/ledger-service)
+
+## Entry points
 
 | Carpeta    | Uso | Expone API ledger |
 |------------|-----|-------------------|
