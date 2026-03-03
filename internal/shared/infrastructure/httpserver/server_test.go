@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"ledger-service/internal/shared/configuration"
-	"ledger-service/internal/shared/infrastructure/httpserver/middleware"
-	"ledger-service/internal/shared/infrastructure/observability"
+	"koreels/internal/shared/configuration"
+	"koreels/internal/shared/infrastructure/httpserver/middleware"
+	"koreels/internal/shared/infrastructure/observability"
 
 	"go.opentelemetry.io/otel/trace/noop"
 )
@@ -21,7 +21,7 @@ func createDummyObservability() (observability.Observability, middleware.Request
 }
 
 func TestNewServer(t *testing.T) {
-	conf := configuration.Conf{PORT: "8081", PROJECT_NAME: "ledger-service", VERSION: "v1"}
+	conf := configuration.Conf{PORT: "8081", PROJECT_NAME: "koreels", VERSION: "v1"}
 	_, mw := createDummyObservability()
 	server, err := NewServer(conf, mw)
 	if err != nil {

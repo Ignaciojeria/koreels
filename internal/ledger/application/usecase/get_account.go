@@ -3,9 +3,9 @@ package usecase
 import (
 	"context"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	"ledger-service/internal/ledger/application/ports/out"
-	domainerrors "ledger-service/internal/ledger/domain/errors"
+	"koreels/internal/ledger/application/ports/in"
+	"koreels/internal/ledger/application/ports/out"
+	domainerrors "koreels/internal/ledger/domain/errors"
 
 	"github.com/Ignaciojeria/ioc"
 )

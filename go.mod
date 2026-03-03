@@ -1,4 +1,4 @@
-module ledger-service
+module koreels
 
 go 1.24.11
 

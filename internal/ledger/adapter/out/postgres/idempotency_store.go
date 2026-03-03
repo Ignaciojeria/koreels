@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"ledger-service/internal/ledger/application/ports/out"
-	"ledger-service/internal/ledger/domain/entity"
+	"koreels/internal/ledger/application/ports/out"
+	"koreels/internal/ledger/domain/entity"
 
 	"github.com/Ignaciojeria/ioc"
 	"github.com/jmoiron/sqlx"

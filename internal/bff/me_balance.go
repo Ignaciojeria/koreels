@@ -3,9 +3,9 @@ package bff
 import (
 	"net/http"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	"ledger-service/internal/shared/contextkeys"
-	"ledger-service/internal/shared/infrastructure/httpserver"
+	"koreels/internal/ledger/application/ports/in"
+	"koreels/internal/shared/contextkeys"
+	"koreels/internal/shared/infrastructure/httpserver"
 
 	"github.com/Ignaciojeria/ioc"
 	fuegofw "github.com/go-fuego/fuego"

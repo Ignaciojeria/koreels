@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	ledger "ledger-service"
+	ledger "koreels"
 )
 
 func TestNewConf_DefaultValues(t *testing.T) {
@@ -32,7 +32,7 @@ func TestNewConf_DefaultValues(t *testing.T) {
 
 func TestNewConf_CustomEnvs(t *testing.T) {
 	os.Setenv("PORT", "9090")
-	os.Setenv("PROJECT_NAME", "ledger-service")
+	os.Setenv("PROJECT_NAME", "koreels")
 	os.Setenv("VERSION", "2.0")
 	defer func() {
 		os.Unsetenv("PORT")

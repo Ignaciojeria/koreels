@@ -7,9 +7,9 @@ import (
 	"errors"
 	"time"
 
-	"ledger-service/internal/ledger/application/ports/out"
-	"ledger-service/internal/ledger/domain/entity"
-	domainerrors "ledger-service/internal/ledger/domain/errors"
+	"koreels/internal/ledger/application/ports/out"
+	"koreels/internal/ledger/domain/entity"
+	domainerrors "koreels/internal/ledger/domain/errors"
 
 	"github.com/Ignaciojeria/ioc"
 	"github.com/jackc/pgx/v5/pgconn"

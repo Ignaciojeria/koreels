@@ -3,7 +3,7 @@ package out
 import (
 	"context"
 
-	"ledger-service/internal/ledger/domain/entity"
+	"koreels/internal/ledger/domain/entity"
 )
 
 type LedgerEntryRepository interface {

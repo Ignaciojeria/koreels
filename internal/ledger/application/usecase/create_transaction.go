@@ -8,11 +8,11 @@ import (
 	"errors"
 	"time"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	"ledger-service/internal/ledger/application/ports/out"
-	"ledger-service/internal/ledger/domain/entity"
-	domainerrors "ledger-service/internal/ledger/domain/errors"
-	"ledger-service/internal/shared/contextkeys"
+	"koreels/internal/ledger/application/ports/in"
+	"koreels/internal/ledger/application/ports/out"
+	"koreels/internal/ledger/domain/entity"
+	domainerrors "koreels/internal/ledger/domain/errors"
+	"koreels/internal/shared/contextkeys"
 
 	"github.com/Ignaciojeria/ioc"
 )

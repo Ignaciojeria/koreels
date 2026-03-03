@@ -6,12 +6,12 @@ import (
 	"log/slog"
 	"net/http"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	"ledger-service/internal/shared/configuration"
-	"ledger-service/internal/shared/contextkeys"
-	"ledger-service/internal/shared/infrastructure/httpserver"
-	"ledger-service/internal/shared/infrastructure/httpserver/middleware"
-	"ledger-service/internal/shared/infrastructure/observability"
+	"koreels/internal/ledger/application/ports/in"
+	"koreels/internal/shared/configuration"
+	"koreels/internal/shared/contextkeys"
+	"koreels/internal/shared/infrastructure/httpserver"
+	"koreels/internal/shared/infrastructure/httpserver/middleware"
+	"koreels/internal/shared/infrastructure/observability"
 
 	"go.opentelemetry.io/otel/trace/noop"
 )

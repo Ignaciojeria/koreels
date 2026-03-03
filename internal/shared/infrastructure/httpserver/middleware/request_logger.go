@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"ledger-service/internal/shared/infrastructure/observability"
+	"koreels/internal/shared/infrastructure/observability"
 
 	"github.com/Ignaciojeria/ioc"
 )

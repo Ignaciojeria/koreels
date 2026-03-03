@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strings"
 
-	"ledger-service/internal/shared/configuration"
+	"koreels/internal/shared/configuration"
 
 	"github.com/Ignaciojeria/ioc"
 	"github.com/golang-migrate/migrate/v4"

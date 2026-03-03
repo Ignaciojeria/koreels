@@ -3,10 +3,10 @@ package bff
 import (
 	"net/http"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	domainerrors "ledger-service/internal/ledger/domain/errors"
-	"ledger-service/internal/shared/contextkeys"
-	"ledger-service/internal/shared/infrastructure/httpserver"
+	"koreels/internal/ledger/application/ports/in"
+	domainerrors "koreels/internal/ledger/domain/errors"
+	"koreels/internal/shared/contextkeys"
+	"koreels/internal/shared/infrastructure/httpserver"
 
 	"github.com/Ignaciojeria/ioc"
 	fuegofw "github.com/go-fuego/fuego"

@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"ledger-service/internal/shared/configuration"
+	"koreels/internal/shared/configuration"
 
 	"github.com/Ignaciojeria/ioc"
 	"go.opentelemetry.io/otel"

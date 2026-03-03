@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"ledger-service/internal/ledger/application/ports/in"
+	"koreels/internal/ledger/application/ports/in"
 )
 
 type mockCreateTransaction struct {

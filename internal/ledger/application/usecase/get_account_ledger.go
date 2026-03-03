@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	"ledger-service/internal/ledger/application/ports/out"
+	"koreels/internal/ledger/application/ports/in"
+	"koreels/internal/ledger/application/ports/out"
 
 	"github.com/Ignaciojeria/ioc"
 )

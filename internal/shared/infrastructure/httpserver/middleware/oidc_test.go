@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"ledger-service/internal/shared/contextkeys"
+	"koreels/internal/shared/contextkeys"
 )
 
 func TestOIDC_NoOpWhenIssuerEmpty(t *testing.T) {

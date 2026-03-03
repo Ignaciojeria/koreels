@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"ledger-service/internal/ledger/application/ports/in"
-	domainerrors "ledger-service/internal/ledger/domain/errors"
+	"koreels/internal/ledger/application/ports/in"
+	domainerrors "koreels/internal/ledger/domain/errors"
 )
 
 type mockGetTransaction struct {

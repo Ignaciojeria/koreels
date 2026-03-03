@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"ledger-service/internal/shared/contextkeys"
-	"ledger-service/internal/shared/configuration"
+	"koreels/internal/shared/contextkeys"
+	"koreels/internal/shared/configuration"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 )

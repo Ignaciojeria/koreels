@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"ledger-service/internal/shared/configuration"
-	"ledger-service/internal/shared/infrastructure/httpserver/middleware"
-	"ledger-service/internal/shared/infrastructure/observability"
+	"koreels/internal/shared/configuration"
+	"koreels/internal/shared/infrastructure/httpserver/middleware"
+	"koreels/internal/shared/infrastructure/observability"
 
 	"github.com/Ignaciojeria/ioc"
 	"github.com/go-fuego/fuego"

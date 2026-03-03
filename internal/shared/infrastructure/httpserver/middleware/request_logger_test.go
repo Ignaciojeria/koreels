@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"ledger-service/internal/shared/infrastructure/observability"
+	"koreels/internal/shared/infrastructure/observability"
 
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel/trace/noop"

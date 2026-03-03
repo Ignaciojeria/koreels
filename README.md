@@ -1,7 +1,7 @@
-# ledger-service
+# koreels
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/Ignaciojeria/ledger-service)](https://goreportcard.com/report/github.com/Ignaciojeria/ledger-service)
-[![codecov](https://codecov.io/gh/Ignaciojeria/ledger-service/graph/badge.svg)](https://codecov.io/gh/Ignaciojeria/ledger-service)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Ignaciojeria/koreels)](https://goreportcard.com/report/github.com/Ignaciojeria/koreels)
+[![codecov](https://codecov.io/gh/Ignaciojeria/koreels/graph/badge.svg)](https://codecov.io/gh/Ignaciojeria/koreels)
 
 ## Entry points
 
