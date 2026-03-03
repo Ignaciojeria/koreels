@@ -6,6 +6,7 @@
 *.test
 *.out
 coverage
+coverage.html
 coverage.out
 coverage_p.out
 vendor/

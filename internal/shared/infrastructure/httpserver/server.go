@@ -31,7 +31,8 @@ type Server struct {
 }
 
 func NewServer(conf configuration.Conf, requestLogger middleware.RequestLogger) (*Server, error) {
-	s := fuego.NewServer(fuego.WithAddr(":"+conf.PORT), fuego.WithGlobalMiddlewares(requestLogger))
+	oidcMiddleware := middleware.NewOIDCFromConf(conf)
+	s := fuego.NewServer(fuego.WithAddr(":"+conf.PORT), fuego.WithGlobalMiddlewares(requestLogger, oidcMiddleware))
 	s.ReadTimeout = 30 * time.Minute
 	s.WriteTimeout = 30 * time.Minute
 	s.ReadHeaderTimeout = 30 * time.Minute

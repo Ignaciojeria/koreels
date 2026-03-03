@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"ledger-service/internal/ledger/application/ports/in"
+	"ledger-service/internal/shared/contextkeys"
 	"ledger-service/internal/shared/infrastructure/httpserver"
 
 	"github.com/Ignaciojeria/ioc"
@@ -15,15 +16,20 @@ var _ = ioc.Register(NewBFFRoutes)
 
 // NewBFFRoutes registra solo rutas BFF (ej. /me/balance). No expone el API del ledger.
 // El ledger se usa en memoria vía los ports in (GetAccountExecutor, etc.).
+// La identidad (accountId) se lee del context inyectado por el middleware OIDC.
 func NewBFFRoutes(s *httpserver.Server, getAccount in.GetAccountExecutor) (*BFFRoutes, error) {
 	fuegofw.Get(s.Manager, "/me/balance",
 		func(c fuegofw.ContextNoBody) (BalanceResponse, error) {
-			accountId := c.QueryParam("accountId")
+			accountId, ok := contextkeys.GetAccountID(c.Context())
+			if !ok || accountId == "" {
+				// Fallback: usar sub como accountId (ej. en local con Dex cuando no hay claim account_id)
+				accountId, _ = contextkeys.GetSubject(c.Context())
+			}
 			if accountId == "" {
 				return BalanceResponse{}, fuegofw.HTTPError{
-					Err:    errMissingAccountId,
-					Status: http.StatusBadRequest,
-					Detail: "query param accountId is required",
+					Err:    errMissingIdentity,
+					Status: http.StatusUnauthorized,
+					Detail: "authentication required",
 				}
 			}
 			out, err := getAccount.Execute(c.Context(), accountId)
@@ -37,7 +43,6 @@ func NewBFFRoutes(s *httpserver.Server, getAccount in.GetAccountExecutor) (*BFFR
 			}, nil
 		},
 		option.Summary("getMyBalance"),
-		option.Query("accountId", "Account ID (e.g. from auth)"),
 	)
 	return &BFFRoutes{}, nil
 }
@@ -50,7 +55,7 @@ type BalanceResponse struct {
 	Currency  string `json:"currency"`
 }
 
-var errMissingAccountId = &errMsg{"accountId required"}
+var errMissingIdentity = &errMsg{"authentication required"}
 
 type errMsg struct{ msg string }
 

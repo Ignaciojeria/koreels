@@ -1,0 +1,38 @@
+# Dex config for local development. Issuer must match OIDC_ISSUER (e.g. http://localhost:5556/dex).
+issuer: http://localhost:5556/dex
+
+storage:
+  type: sqlite3
+  config:
+    file: /var/dex/dex.db
+
+web:
+  http: 0.0.0.0:5556
+
+staticClients:
+  - id: ledger-bff
+    secret: ledger-secret
+    name: Ledger BFF
+    redirectURIs:
+      - 'http://localhost:8080/callback'
+      - '/dex/device/callback'
+
+enablePasswordDB: true
+
+staticPasswords:
+  - email: "dev@localhost"
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "dev"
+    userID: "dev-user-001"
+
+oauth2:
+  grantTypes:
+    - "authorization_code"
+    - "refresh_token"
+    - "password"
+  passwordConnector: local
+
+signer:
+  type: local
+  config:
+    keysRotationPeriod: "6h"

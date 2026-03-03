@@ -20,3 +20,7 @@ go run ./cmd/bff
 ```
 
 El BFF usa el ledger en memoria (use cases) y solo registra sus propias rutas; al no importar `internal/ledger/adapter/in/fuegoapi`, las rutas del ledger no se exponen.
+
+## BFF y OIDC
+
+Para que el BFF exija autenticación JWT, define `OIDC_ISSUER` y `OIDC_CLIENT_ID` (por ejemplo con Dex en local). Sin ellas el middleware de auth es no-op; las rutas como `/me/balance` requieren identidad en el context y devolverán 401 si no hay token válido. Ver [docs/dev.md](../docs/dev.md) para levantar Dex y obtener un token.
