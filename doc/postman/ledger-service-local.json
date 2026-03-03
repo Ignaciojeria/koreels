@@ -1,0 +1,137 @@
+{
+	"info": {
+		"_postman_id": "ledger-service-local",
+		"name": "Ledger Service (local)",
+		"description": "Colección para probar ledger-service en local.\n\n**Ledger API** (cmd/api o cmd/ledger): accounts, transactions, ledger.\n**BFF** (cmd/bff): POST /me/account (crear/asegurar cuenta), GET /me/balance; requieren token OIDC.\n\nVariables: `base_url` (ej. http://localhost:8081), `token` (id_token de Dex para BFF).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "base_url", "value": "http://localhost:8081" },
+		{ "key": "token", "value": "" },
+		{ "key": "accountId", "value": "550e8400-e29b-41d4-a716-446655440000" },
+		{ "key": "transactionId", "value": "660e8400-e29b-41d4-a716-446655440001" },
+		{ "key": "idempotencyKey", "value": "postman-{{$guid}}" }
+	],
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "GET Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/health",
+						"description": "Health check (sin auth)."
+					}
+				}
+			]
+		},
+		{
+			"name": "Ledger API - Accounts",
+			"item": [
+				{
+					"name": "POST Create account",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": \"{{accountId}}\",\n  \"type\": \"USER\",\n  \"currency\": \"CREDITS\",\n  \"allowNegative\": false,\n  \"metadata\": {\n    \"userId\": \"{{accountId}}\"\n  }\n}"
+						},
+						"url": "{{base_url}}/accounts",
+						"description": "Crea una cuenta. type: USER | SYSTEM | PROMOTION."
+					}
+				},
+				{
+					"name": "GET Account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/accounts/{{accountId}}",
+						"description": "Obtiene una cuenta por accountId."
+					}
+				},
+				{
+					"name": "GET Account ledger",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/accounts/{{accountId}}/ledger?limit=50",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{{accountId}}", "ledger"],
+							"query": [
+								{ "key": "limit", "value": "50" },
+								{ "key": "cursor", "value": "", "disabled": true }
+							]
+						},
+						"description": "Historial de entradas del ledger. Opcional: cursor para paginación."
+					}
+				}
+			]
+		},
+		{
+			"name": "Ledger API - Transactions",
+			"item": [
+				{
+					"name": "POST Create transaction",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Idempotency-Key", "value": "{{idempotencyKey}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"transactionId\": \"{{transactionId}}\",\n  \"entries\": [\n    { \"accountId\": \"{{accountId}}\", \"amount\": -100 },\n    { \"accountId\": \"a1b2c3d4-e29b-41d4-a716-446655440002\", \"amount\": 100 }\n  ],\n  \"metadata\": {\n    \"type\": \"AGENT_USAGE\"\n  }\n}"
+						},
+						"url": "{{base_url}}/transactions",
+						"description": "Crea una transacción (doble entrada). La suma de entries.amount debe ser 0. Idempotency-Key obligatorio por cabecera."
+					}
+				},
+				{
+					"name": "GET Transaction",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{base_url}}/transactions/{{transactionId}}",
+						"description": "Obtiene una transacción por transactionId."
+					}
+				}
+			]
+		},
+		{
+			"name": "BFF",
+			"item": [
+				{
+					"name": "POST Create my account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"allowNegative\": false,\n  \"metadata\": {}\n}"
+						},
+						"url": "{{base_url}}/me/account",
+						"description": "Crea la cuenta del usuario autenticado (o devuelve la existente si ya existe). Idempotente: 201 creada, 200 ya existía. Body opcional: allowNegative, metadata. Requiere token OIDC."
+					}
+				},
+				{
+					"name": "GET My balance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": "{{base_url}}/me/balance",
+						"description": "Balance del usuario autenticado. Requiere token OIDC (Dex local: ver doc/dev.md para obtener id_token). Variable 'token' debe tener el id_token."
+					}
+				}
+			]
+		}
+	]
+}

@@ -12,17 +12,15 @@ import (
 	"github.com/go-fuego/fuego/option"
 )
 
-var _ = ioc.Register(NewBFFRoutes)
+var _ = ioc.Register(NewMeBalanceRoutes)
 
-// NewBFFRoutes registra solo rutas BFF (ej. /me/balance). No expone el API del ledger.
-// El ledger se usa en memoria vía los ports in (GetAccountExecutor, etc.).
+// NewMeBalanceRoutes registra GET /me/balance. No expone el API del ledger.
 // La identidad (accountId) se lee del context inyectado por el middleware OIDC.
-func NewBFFRoutes(s *httpserver.Server, getAccount in.GetAccountExecutor) (*BFFRoutes, error) {
+func NewMeBalanceRoutes(s *httpserver.Server, getAccount in.GetAccountExecutor) (*MeBalanceRoutes, error) {
 	fuegofw.Get(s.Manager, "/me/balance",
 		func(c fuegofw.ContextNoBody) (BalanceResponse, error) {
 			accountId, ok := contextkeys.GetAccountID(c.Context())
 			if !ok || accountId == "" {
-				// Fallback: usar sub como accountId (ej. en local con Dex cuando no hay claim account_id)
 				accountId, _ = contextkeys.GetSubject(c.Context())
 			}
 			if accountId == "" {
@@ -44,10 +42,11 @@ func NewBFFRoutes(s *httpserver.Server, getAccount in.GetAccountExecutor) (*BFFR
 		},
 		option.Summary("getMyBalance"),
 	)
-	return &BFFRoutes{}, nil
+	return &MeBalanceRoutes{}, nil
 }
 
-type BFFRoutes struct{}
+// MeBalanceRoutes agrupa la ruta GET /me/balance (registrada por NewMeBalanceRoutes).
+type MeBalanceRoutes struct{}
 
 type BalanceResponse struct {
 	AccountId string `json:"accountId"`

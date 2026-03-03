@@ -66,6 +66,16 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/me/balance
 2. Inicia sesión con **dev** / **password**.
 3. Dex redirige a `http://localhost:8080/callback?code=...&state=STATE`. Intercambia el `code` por tokens en el endpoint `/dex/token` (client_id + client_secret) y usa el `id_token` como Bearer en el BFF.
 
+## Postman
+
+Importa la colección `doc/postman/ledger-service-local.json` en Postman. Variables de colección:
+
+- **base_url**: `http://localhost:8081` (o el puerto de tu `.env`).
+- **token**: el `id_token` obtenido de Dex (solo para las peticiones BFF).
+- **accountId**, **transactionId**: UUIDs de ejemplo; créalos con POST /accounts o reutiliza los que devuelve la API.
+
+Para las peticiones BFF, obtén antes un token con el curl de Dex y pégalo en la variable `token`. **Primer uso:** llama primero a **POST /me/account** (crea tu cuenta o devuelve la existente de forma idempotente); luego **GET /me/balance** para ver el saldo.
+
 ## Sin OIDC (cmd/ledger, cmd/api)
 
 Si no defines `OIDC_ISSUER`, el middleware de auth es no-op. `cmd/ledger` y `cmd/api` no requieren token; el BFF sin variables OIDC tampoco validará JWT (pero `/me/balance` seguirá exigiendo identidad en context, que solo tendrás si algún middleware la inyecta; en ese caso devolverá 401 sin token válido).

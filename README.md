@@ -23,4 +23,4 @@ El BFF usa el ledger en memoria (use cases) y solo registra sus propias rutas; a
 
 ## BFF y OIDC
 
-Para que el BFF exija autenticación JWT, define `OIDC_ISSUER` y `OIDC_CLIENT_ID` (por ejemplo con Dex en local). Sin ellas el middleware de auth es no-op; las rutas como `/me/balance` requieren identidad en el context y devolverán 401 si no hay token válido. Ver [docs/dev.md](../docs/dev.md) para levantar Dex y obtener un token.
+Para que el BFF exija autenticación JWT, define `OIDC_ISSUER` y `OIDC_CLIENT_ID` (por ejemplo con Dex en local). Sin ellas el middleware de auth es no-op; las rutas como `/me/balance` requieren identidad en el context y devolverán 401 si no hay token válido. Ver [doc/dev.md](./doc/dev.md) para levantar Dex y obtener un token.

@@ -12,6 +12,7 @@ import (
 	domainerrors "ledger-service/internal/ledger/domain/errors"
 
 	"github.com/Ignaciojeria/ioc"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -70,7 +71,14 @@ func (r *accountRepository) Create(ctx context.Context, account entity.Account) 
 		INSERT INTO accounts (account_id, type, currency, allow_negative, balance, metadata)
 		VALUES ($1, $2, $3, $4, 0, $5)
 	`, m.AccountId, m.Type, m.Currency, m.AllowNegative, m.Metadata)
-	return err
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return domainerrors.ErrAccountAlreadyExists
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *accountRepository) FindByID(ctx context.Context, accountId string) (*entity.Account, error) {
