@@ -16,6 +16,9 @@ type Conf struct {
 	EVENT_BROKER      string `env:"EVENT_BROKER" envDefault:"nats"`
 	GOOGLE_PROJECT_ID string `env:"GOOGLE_PROJECT_ID"`
 
+	// Qwen API
+	DASHSCOPE_API_KEY string `env:"DASHSCOPE_API_KEY"`
+
 	// OIDC: cuando OIDC_ISSUER está vacío el middleware de auth es no-op (cmd/ledger, cmd/api).
 	// En cmd/bff se define en env para activar validación JWT.
 	OIDC_ISSUER    string `env:"OIDC_ISSUER"`     // ej. http://localhost:5556/dex (local) o https://tenant.auth0.com/

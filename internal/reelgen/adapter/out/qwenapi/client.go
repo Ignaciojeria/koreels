@@ -10,29 +10,33 @@ import (
 	"github.com/Ignaciojeria/ioc"
 	"koreels/internal/reelgen/application/ports/out"
 	"koreels/internal/reelgen/domain/entity"
+	"koreels/internal/shared/configuration"
 )
 
 var _ = ioc.Register(NewChatCompletionClient)
 
 type chatCompletionClient struct {
 	client *http.Client
+	conf   configuration.Conf
 }
 
-func NewChatCompletionClient() out.ChatCompletionClient {
+func NewChatCompletionClient(conf configuration.Conf) out.ChatCompletionClient {
 	return &chatCompletionClient{
 		client: &http.Client{},
+		conf:   conf,
 	}
 }
 
 func (c *chatCompletionClient) Generate(ctx context.Context, prompt string) (*entity.ChatCompletionResponse, error) {
-	// For now, this is a placeholder implementation expecting an OpenAI/Qwen compatible endpoint.
-	// We'll construct a mock request just to satisfy the struct mapping as requested.
-
-	url := "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions" // Example URL for Qwen
+	url := "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions"
 
 	requestBody := map[string]interface{}{
 		"model": "qwen-plus",
 		"messages": []map[string]string{
+			{
+				"role":    "system",
+				"content": "You are a helpful assistant.",
+			},
 			{
 				"role":    "user",
 				"content": prompt,
@@ -48,8 +52,11 @@ func (c *chatCompletionClient) Generate(ctx context.Context, prompt string) (*en
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+	
 	req.Header.Set("Content-Type", "application/json")
-	// req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+	if c.conf.DASHSCOPE_API_KEY != "" {
+		req.Header.Set("Authorization", "Bearer "+c.conf.DASHSCOPE_API_KEY)
+	}
 
 	resp, err := c.client.Do(req)
 	if err != nil {
