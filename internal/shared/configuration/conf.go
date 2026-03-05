@@ -12,6 +12,10 @@ type Conf struct {
 	VERSION      string `env:"VERSION"`
 	DATABASE_URL string `env:"DATABASE_URL" envDefault:"postgres://postgres:postgres@localhost:5432/ledger?sslmode=disable"`
 
+	// EventBus config
+	EVENT_BROKER      string `env:"EVENT_BROKER" envDefault:"nats"`
+	GOOGLE_PROJECT_ID string `env:"GOOGLE_PROJECT_ID"`
+
 	// OIDC: cuando OIDC_ISSUER está vacío el middleware de auth es no-op (cmd/ledger, cmd/api).
 	// En cmd/bff se define en env para activar validación JWT.
 	OIDC_ISSUER    string `env:"OIDC_ISSUER"`     // ej. http://localhost:5556/dex (local) o https://tenant.auth0.com/

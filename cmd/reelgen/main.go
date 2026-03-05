@@ -1,4 +1,4 @@
-// Ledger como servicio independiente: expone la API del ledger (POST/GET accounts, transactions).
+// Reelgen como servicio independiente.
 package main
 
 import (
@@ -6,22 +6,19 @@ import (
 	"os"
 	"strings"
 
-	ledger "koreels"
-	_ "koreels/internal/ledger/adapter/in/fuegoapi"
-	_ "koreels/internal/ledger/adapter/out/postgres"
-	_ "koreels/internal/ledger/application/usecase"
+	reelgen "koreels"
+	_ "koreels/internal/reelgen/adapter/out/qwenapi"
 	_ "koreels/internal/shared/configuration"
 	_ "koreels/internal/shared/infrastructure/eventbus"
 	_ "koreels/internal/shared/infrastructure/httpserver"
 	_ "koreels/internal/shared/infrastructure/httpserver/middleware"
 	_ "koreels/internal/shared/infrastructure/observability"
-	_ "koreels/internal/shared/infrastructure/postgresql"
 
 	"github.com/Ignaciojeria/ioc"
 )
 
 func main() {
-	os.Setenv("VERSION", strings.TrimSpace(ledger.Version))
+	os.Setenv("VERSION", strings.TrimSpace(reelgen.Version))
 
 	if err := ioc.LoadDependencies(); err != nil {
 		log.Fatal("Failed to load dependencies:", err)

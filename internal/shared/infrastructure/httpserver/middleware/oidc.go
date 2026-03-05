@@ -15,10 +15,11 @@ import (
 // OIDCConfig is the configuration for the OIDC middleware.
 // When Issuer is empty the middleware is a no-op.
 type OIDCConfig struct {
-	Issuer    string // OIDC_ISSUER
-	ClientID  string // OIDC_CLIENT_ID
-	Audience  string // OIDC_AUDIENCE; if empty, ClientID is used for aud validation
-	SkipPaths []string
+	Issuer           string   // OIDC_ISSUER
+	ClientID         string   // OIDC_CLIENT_ID
+	Audience         string   // OIDC_AUDIENCE; if empty, ClientID is used for aud validation
+	SkipPaths        []string // rutas exactas que no requieren auth (ej. /health, /metrics)
+	SkipPathPrefixes []string // prefijos de ruta sin auth (ej. /swagger → /swagger, /swagger/index.html, etc.)
 }
 
 // OIDC returns a middleware that validates JWT Bearer tokens and injects Identity into context.
@@ -33,6 +34,7 @@ func OIDC(config OIDCConfig) func(http.Handler) http.Handler {
 	for _, p := range config.SkipPaths {
 		skip[p] = struct{}{}
 	}
+	skipPrefixes := config.SkipPathPrefixes
 	audience := config.Audience
 	if audience == "" {
 		audience = config.ClientID
@@ -48,6 +50,12 @@ func OIDC(config OIDCConfig) func(http.Handler) http.Handler {
 			if _, ok := skip[r.URL.Path]; ok {
 				next.ServeHTTP(w, r)
 				return
+			}
+			for _, prefix := range skipPrefixes {
+				if strings.HasPrefix(r.URL.Path, prefix) {
+					next.ServeHTTP(w, r)
+					return
+				}
 			}
 			initOnce.Do(func() {
 				provider, initErr = oidc.NewProvider(context.Background(), config.Issuer)
@@ -90,10 +98,11 @@ func OIDC(config OIDCConfig) func(http.Handler) http.Handler {
 // NewOIDCFromConf builds OIDC middleware from shared Conf. No-op when Conf.OIDC_ISSUER is empty.
 func NewOIDCFromConf(conf configuration.Conf) func(http.Handler) http.Handler {
 	return OIDC(OIDCConfig{
-		Issuer:    conf.OIDC_ISSUER,
-		ClientID:  conf.OIDC_CLIENT_ID,
-		Audience:  conf.OIDC_AUDIENCE,
-		SkipPaths: []string{"/health", "/metrics"},
+		Issuer:           conf.OIDC_ISSUER,
+		ClientID:         conf.OIDC_CLIENT_ID,
+		Audience:         conf.OIDC_AUDIENCE,
+		SkipPaths:        []string{"/health", "/metrics"},
+		SkipPathPrefixes: []string{"/swagger"}, // swagger/index.html y todo lo que cuelga de /swagger sin auth
 	})
 }
 
