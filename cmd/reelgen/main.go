@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	reelgen "koreels"
+	_ "koreels/internal/reelgen/adapter/in/fuegoapi"
 	_ "koreels/internal/reelgen/adapter/out/qwenapi"
+	_ "koreels/internal/reelgen/application/usecase"
 	_ "koreels/internal/shared/configuration"
 	_ "koreels/internal/shared/infrastructure/eventbus"
 	_ "koreels/internal/shared/infrastructure/httpserver"
