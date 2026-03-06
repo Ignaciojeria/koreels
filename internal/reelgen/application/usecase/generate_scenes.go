@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Ignaciojeria/ioc"
 	"koreels/internal/reelgen/application/ports/in"
 	"koreels/internal/reelgen/application/ports/out"
+
+	"github.com/Ignaciojeria/ioc"
 )
 
 var _ = ioc.Register(NewGenerateScenesUseCase)
@@ -23,16 +24,14 @@ func NewGenerateScenesUseCase(client out.ChatCompletionClient) in.GenerateScenes
 }
 
 func (u *generateScenesUseCase) Execute(ctx context.Context, req in.GenerateScenesRequest) (in.GenerateScenesResponse, error) {
-	systemPrompt := `You are an expert video editing assistant. 
-Your task is to take a given script and segment it into coherent scenes for a short video (like Instagram Reels, TikTok).
-Follow these critical rules:
-1. Dynamic Subtitles (Relative Time): Subtitles must use relative timestamps starting from 0.0 for each scene. Lines within a scene must NOT overlap in time. They must appear progressively (e.g., Line 1: 0.0-1.5, Line 2: 1.5-3.2). 
-2. No Dead Time: The lines MUST cover the ENTIRE scene duration continuously. The first line's start MUST be 0.0. The last line's end MUST equal the scene's total duration (end - start). There must be NO time gaps between lines.
-3. Strict Reading Pace & Line Length: Ensure a reading speed of 2.5 to 3.5 words per second (approx 14-18 characters per second). NEVER cram long sentences into short durations (e.g., do not put 15 words in 0.7s). If a sentence is long, allocate enough time (e.g., 4-5 seconds) and split it into multiple lines.
-4. No Empty Lines: Never output empty strings in the 'lines' array. Only include real text.
-5. Consistent Animations: Use 'SCALE_IN' for the hook (index 0) and 'SLIDE_UP' for all other scenes.
-6. Emphasis: Identify 1 or 2 high-impact words per line to be visually emphasized in the video. Put them in the 'emphasis' array. Only include words that actually exist in the line text. Do not emphasize filler words.
-Respect the user's constraints: subtitle style, placement, max chars per line, and max lines. You must strictly return a JSON object matching the required schema.`
+	systemPrompt := `You are an expert script segmentation assistant for short-form video content (like Reels/TikTok). Segment the script into coherent scenes following these rules:
+1. Subtitle Timing: Use relative timestamps per scene (start at 0.0). Lines must be progressive, non-overlapping, and continuously cover the ENTIRE scene duration with zero time gaps.
+2. Reading Pace: Target 2.5-3.5 words/sec. Give long sentences adequate time and split them. Never cram text (e.g. 15 words in 0.7s).
+3. Quality: Omit empty lines. Only output real text.
+4. Animations: 'SCALE_IN' for scene 0, 'SLIDE_UP' for the rest.
+5. Placement: If 'placementStrategy' is TOP/BOTTOM, apply strictly to all scenes. If DYNAMIC, intelligently choose TOP, CENTER, or BOTTOM per scene.
+6. Emphasis: Pick 1-2 high-impact words per line (no filler words) existing in the text and add them to the 'emphasis' array.
+Respect user constraints (style, max chars/lines) and strictly output the requested JSON schema.`
 
 	userPromptBytes, _ := json.Marshal(req)
 	userPrompt := fmt.Sprintf("Please process the following request parameters and script:\n%s", string(userPromptBytes))
@@ -40,7 +39,7 @@ Respect the user's constraints: subtitle style, placement, max chars per line, a
 	responseFormat := map[string]interface{}{
 		"type": "json_schema",
 		"json_schema": map[string]interface{}{
-			"name": "generate_scenes_response",
+			"name":   "generate_scenes_response",
 			"strict": true,
 			"schema": map[string]interface{}{
 				"type": "object",
@@ -75,7 +74,7 @@ Respect the user's constraints: subtitle style, placement, max chars per line, a
 													"start": map[string]interface{}{"type": "number"},
 													"end":   map[string]interface{}{"type": "number"},
 													"emphasis": map[string]interface{}{
-														"type": "array",
+														"type":  "array",
 														"items": map[string]interface{}{"type": "string"},
 													},
 												},

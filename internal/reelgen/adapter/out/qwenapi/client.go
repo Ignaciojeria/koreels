@@ -10,10 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ignaciojeria/ioc"
 	"koreels/internal/reelgen/application/ports/out"
 	"koreels/internal/reelgen/domain/entity"
 	"koreels/internal/shared/configuration"
+
+	"github.com/Ignaciojeria/ioc"
 )
 
 var _ = ioc.Register(NewChatCompletionClient)
@@ -24,7 +25,7 @@ type chatCompletionClient struct {
 }
 
 // defaultTimeout para chat completions (LLM puede tardar).
-const defaultTimeout = 120 * time.Second
+const defaultTimeout = 600 * time.Second
 
 func NewChatCompletionClient(conf configuration.Conf) out.ChatCompletionClient {
 	return &chatCompletionClient{
