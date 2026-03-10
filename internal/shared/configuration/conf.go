@@ -13,8 +13,15 @@ type Conf struct {
 	DATABASE_URL string `env:"DATABASE_URL" envDefault:"postgres://postgres:postgres@localhost:5432/ledger?sslmode=disable"`
 
 	// EventBus config
-	EVENT_BROKER      string `env:"EVENT_BROKER" envDefault:"nats"`
-	GOOGLE_PROJECT_ID string `env:"GOOGLE_PROJECT_ID"`
+	EVENT_BROKER            string `env:"EVENT_BROKER" envDefault:"nats"`
+	GOOGLE_PROJECT_ID       string `env:"GOOGLE_PROJECT_ID"`
+	GOOGLE_PROJECT_LOCATION string `env:"GOOGLE_PROJECT_LOCATION" envDefault:"us-east1"`
+
+	// Generation Provider
+	SCENE_GENERATOR_PROVIDER string `env:"SCENE_GENERATOR_PROVIDER" envDefault:"qwen"` // "qwen" | "gemini"
+
+	// Gemini API
+	GEMINI_API_KEY string `env:"GEMINI_API_KEY"`
 
 	// Qwen API
 	DASHSCOPE_API_KEY string `env:"DASHSCOPE_API_KEY"`

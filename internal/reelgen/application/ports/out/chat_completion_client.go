@@ -6,5 +6,5 @@ import (
 )
 
 type ChatCompletionClient interface {
-	Generate(ctx context.Context, systemPrompt, userPrompt string, responseFormat interface{}) (*entity.ChatCompletionResponse, error)
+	Generate(ctx context.Context, systemPrompt, userPrompt string, responseFormat interface{}, apiKey string) (*entity.ChatCompletionResponse, error)
 }

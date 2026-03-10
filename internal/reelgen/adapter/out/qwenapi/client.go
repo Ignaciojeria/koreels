@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"koreels/internal/reelgen/application/ports/out"
 	"koreels/internal/reelgen/domain/entity"
 	"koreels/internal/shared/configuration"
 
@@ -19,7 +18,7 @@ import (
 
 var _ = ioc.Register(NewChatCompletionClient)
 
-type chatCompletionClient struct {
+type ChatCompletionClient struct {
 	client *http.Client
 	conf   configuration.Conf
 }
@@ -27,14 +26,14 @@ type chatCompletionClient struct {
 // defaultTimeout para chat completions (LLM puede tardar).
 const defaultTimeout = 600 * time.Second
 
-func NewChatCompletionClient(conf configuration.Conf) out.ChatCompletionClient {
-	return &chatCompletionClient{
+func NewChatCompletionClient(conf configuration.Conf) *ChatCompletionClient {
+	return &ChatCompletionClient{
 		client: &http.Client{Timeout: defaultTimeout},
 		conf:   conf,
 	}
 }
 
-func (c *chatCompletionClient) Generate(ctx context.Context, systemPrompt, userPrompt string, responseFormat interface{}) (*entity.ChatCompletionResponse, error) {
+func (c *ChatCompletionClient) Generate(ctx context.Context, systemPrompt, userPrompt string, responseFormat interface{}, apiKey string) (*entity.ChatCompletionResponse, error) {
 	url := "https://dashscope-us.aliyuncs.com/compatible-mode/v1/chat/completions"
 
 	requestBody := map[string]interface{}{
@@ -66,9 +65,13 @@ func (c *chatCompletionClient) Generate(ctx context.Context, systemPrompt, userP
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	apiKey := strings.TrimSpace(c.conf.DASHSCOPE_API_KEY)
+	if apiKey == "" {
+		apiKey = strings.TrimSpace(c.conf.DASHSCOPE_API_KEY)
+	}
 	if apiKey != "" {
 		req.Header.Set("Authorization", "Bearer "+apiKey)
+	} else {
+		return nil, fmt.Errorf("qwen api key is required")
 	}
 
 	resp, err := c.client.Do(req)

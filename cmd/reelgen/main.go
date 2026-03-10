@@ -8,9 +8,12 @@ import (
 
 	reelgen "koreels"
 	_ "koreels/internal/reelgen/adapter/in/fuegoapi"
+	_ "koreels/internal/reelgen/adapter/out/chatcompletion"
+	_ "koreels/internal/reelgen/adapter/out/geminiapi"
 	_ "koreels/internal/reelgen/adapter/out/qwenapi"
 	_ "koreels/internal/reelgen/application/usecase"
 	_ "koreels/internal/shared/configuration"
+	_ "koreels/internal/shared/infrastructure/ai"
 	_ "koreels/internal/shared/infrastructure/eventbus"
 	_ "koreels/internal/shared/infrastructure/httpserver"
 	_ "koreels/internal/shared/infrastructure/httpserver/middleware"
