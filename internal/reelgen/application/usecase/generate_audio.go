@@ -27,12 +27,20 @@ func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudio
 		Beats: req.Beats,
 	}
 
+	var voiceOpts *out.VoiceOptions
+	if req.VoiceConfig != nil {
+		voiceOpts = &out.VoiceOptions{
+			Language: req.VoiceConfig.Language,
+			Voice:    req.VoiceConfig.Voice,
+			Style:    req.VoiceConfig.Style,
+		}
+	}
 	for i := range resp.Beats {
 		beat := &resp.Beats[i]
 		if beat.Voice.Text == "" {
 			continue
 		}
-		res, err := u.client.GenerateSpeech(ctx, beat.Voice.Text, req.ProviderAPIKey)
+		res, err := u.client.GenerateSpeech(ctx, beat.Voice.Text, req.ProviderAPIKey, voiceOpts)
 		if err != nil {
 			return in.GenerateAudioResponse{}, fmt.Errorf("beat %d: %w", beat.ID, err)
 		}

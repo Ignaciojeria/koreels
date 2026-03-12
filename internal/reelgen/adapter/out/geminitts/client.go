@@ -47,7 +47,7 @@ func NewTTSClient(
 	}, nil
 }
 
-func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey string) (*out.AudioResult, error) {
+func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey string, opts *out.VoiceOptions) (*out.AudioResult, error) {
 	client := c.genaiClient
 	if client == nil && apiKey != "" {
 		var err error
@@ -67,9 +67,20 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 	}
 
 	lang := "es"
-	promptText := buildTTSPrompt(lang, text)
+	voiceName := defaultVoice
+	style := ""
+	if opts != nil {
+		if opts.Language != "" {
+			lang = opts.Language
+		}
+		if opts.Voice != "" {
+			voiceName = opts.Voice
+		}
+		style = opts.Style
+	}
+	promptText := buildTTSPrompt(lang, style, text)
 
-	pcmBytes, err := c.synthesizeToPCM(ctx, client, promptText)
+	pcmBytes, err := c.synthesizeToPCM(ctx, client, promptText, voiceName)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +108,7 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 	}, nil
 }
 
-func (c *ttsClient) synthesizeToPCM(ctx context.Context, genaiClient *genai.Client, promptText string) ([]byte, error) {
+func (c *ttsClient) synthesizeToPCM(ctx context.Context, genaiClient *genai.Client, promptText string, voiceName string) ([]byte, error) {
 	contents := []*genai.Content{
 		{Role: "user", Parts: []*genai.Part{{Text: promptText}}},
 	}
@@ -106,7 +117,7 @@ func (c *ttsClient) synthesizeToPCM(ctx context.Context, genaiClient *genai.Clie
 		SpeechConfig: &genai.SpeechConfig{
 			VoiceConfig: &genai.VoiceConfig{
 				PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-					VoiceName: defaultVoice,
+					VoiceName: voiceName,
 				},
 			},
 		},
@@ -132,15 +143,31 @@ func (c *ttsClient) synthesizeToPCM(ctx context.Context, genaiClient *genai.Clie
 	return pcmBytes, nil
 }
 
-func buildTTSPrompt(lang, text string) string {
+func buildTTSPrompt(lang, style, text string) string {
+	// Normalize "es-ES", "en-US" -> "es", "en" for the switch
+	if i := strings.Index(lang, "-"); i > 0 {
+		lang = lang[:i]
+	}
+	lang = strings.ToLower(strings.TrimSpace(lang))
 	base := "Say in Spanish"
-	switch strings.ToLower(lang) {
-	case "en", "en-us", "en-gb":
+	switch lang {
+	case "en":
 		base = "Say in English"
-	case "pt", "pt-br":
+	case "pt":
 		base = "Say in Portuguese"
 	case "fr":
 		base = "Say in French"
+	case "de":
+		base = "Say in German"
+	case "it":
+		base = "Say in Italian"
+	case "ja":
+		base = "Say in Japanese"
+	}
+	if style != "" {
+		style = strings.TrimSpace(style)
+		style = strings.TrimSuffix(style, ":")
+		return base + ", " + style + ": " + text
 	}
 	return base + " " + text
 }
