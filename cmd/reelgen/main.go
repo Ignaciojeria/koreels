@@ -11,6 +11,7 @@ import (
 	_ "koreels/internal/reelgen/adapter/out/chatcompletion"
 	_ "koreels/internal/reelgen/adapter/out/geminiapi"
 	_ "koreels/internal/reelgen/adapter/out/geminitts"
+	_ "koreels/internal/reelgen/adapter/out/gcs_uploader"
 	_ "koreels/internal/reelgen/adapter/out/qwenapi"
 	_ "koreels/internal/reelgen/application/usecase"
 	_ "koreels/internal/shared/configuration"

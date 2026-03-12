@@ -32,8 +32,8 @@ type Voice struct {
 }
 
 type Audio struct {
-	URL      string  `json:"url"`
-	Duration float64 `json:"duration"`
+	URL      string  `json:"url,omitempty"`
+	Duration float64 `json:"duration,omitempty"`
 }
 
 type Subtitle struct {
