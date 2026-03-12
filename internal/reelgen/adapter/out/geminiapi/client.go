@@ -37,56 +37,16 @@ func (c *ChatCompletionClient) Generate(ctx context.Context, systemPrompt, userP
 
 	modelName := "gemini-2.5-pro"
 
-	// Match the structured output for scenes
+	// Match the structured output for beats
 	schema := &genai.Schema{
 		Type: genai.TypeObject,
 		Properties: map[string]*genai.Schema{
-			"duration": {Type: genai.TypeNumber},
-			"visualDirection": {
-				Type: genai.TypeObject,
-				Properties: map[string]*genai.Schema{
-					"workspace": {Type: genai.TypeString},
-					"style":     {Type: genai.TypeString},
-				},
-				Required: []string{"workspace", "style"},
-			},
-			"scenes": {
-				Type: genai.TypeArray,
-				Items: &genai.Schema{
-					Type: genai.TypeObject,
-					Properties: map[string]*genai.Schema{
-						"id":     {Type: genai.TypeInteger},
-						"type":   {Type: genai.TypeString},
-						"intent": {Type: genai.TypeString},
-						"start":  {Type: genai.TypeNumber},
-						"end":    {Type: genai.TypeNumber},
-						"visual": {
-							Type: genai.TypeObject,
-							Properties: map[string]*genai.Schema{
-								"environment": {Type: genai.TypeString},
-								"action":      {Type: genai.TypeString},
-								"camera": {
-									Type: genai.TypeObject,
-									Properties: map[string]*genai.Schema{
-										"shot":     {Type: genai.TypeString},
-										"movement": {Type: genai.TypeString},
-									},
-									Required: []string{"shot", "movement"},
-								},
-							},
-							Required: []string{"environment", "action", "camera"},
-						},
-					},
-					Required: []string{"id", "type", "intent", "start", "end", "visual"},
-				},
-			},
 			"beats": {
 				Type: genai.TypeArray,
 				Items: &genai.Schema{
 					Type: genai.TypeObject,
 					Properties: map[string]*genai.Schema{
-						"start": {Type: genai.TypeNumber},
-						"end":   {Type: genai.TypeNumber},
+						"id": {Type: genai.TypeInteger},
 						"voice": {
 							Type: genai.TypeObject,
 							Properties: map[string]*genai.Schema{
@@ -104,26 +64,24 @@ func (c *ChatCompletionClient) Generate(ctx context.Context, systemPrompt, userP
 									Items: &genai.Schema{
 										Type: genai.TypeObject,
 										Properties: map[string]*genai.Schema{
-											"text":  {Type: genai.TypeString},
-											"start": {Type: genai.TypeNumber},
-											"end":   {Type: genai.TypeNumber},
+											"text": {Type: genai.TypeString},
 											"emphasis": {
 												Type:  genai.TypeArray,
 												Items: &genai.Schema{Type: genai.TypeString},
 											},
 										},
-										Required: []string{"text", "start", "end"},
+										Required: []string{"text", "emphasis"},
 									},
 								},
 							},
 							Required: []string{"placement", "animation", "lines"},
 						},
 					},
-					Required: []string{"start", "end", "voice", "subtitle"},
+					Required: []string{"id", "voice", "subtitle"},
 				},
 			},
 		},
-		Required: []string{"duration", "visualDirection", "scenes", "beats"},
+		Required: []string{"beats"},
 	}
 
 	config := &genai.GenerateContentConfig{
