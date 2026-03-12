@@ -27,7 +27,13 @@ type Beat struct {
 }
 
 type Voice struct {
-	Text string `json:"text"`
+	Text  string `json:"text"`
+	Audio *Audio `json:"audio,omitempty"`
+}
+
+type Audio struct {
+	URL      string  `json:"url"`
+	Duration float64 `json:"duration"`
 }
 
 type Subtitle struct {

@@ -26,6 +26,9 @@ type Conf struct {
 	// Qwen API
 	DASHSCOPE_API_KEY string `env:"DASHSCOPE_API_KEY"`
 
+	// GCS bucket for reelgen audio uploads (public URL after upload)
+	GCS_BUCKET string `env:"GCS_BUCKET" envDefault:"koreels-audio"`
+
 	// OIDC: cuando OIDC_ISSUER está vacío el middleware de auth es no-op (cmd/ledger, cmd/api).
 	// En cmd/bff se define en env para activar validación JWT.
 	OIDC_ISSUER    string `env:"OIDC_ISSUER"`     // ej. http://localhost:5556/dex (local) o https://tenant.auth0.com/
