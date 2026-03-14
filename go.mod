@@ -5,7 +5,7 @@ go 1.24.11
 require (
 	cloud.google.com/go/pubsub v1.50.1
 	cloud.google.com/go/storage v1.56.0
-	github.com/Ignaciojeria/ioc v1.0.0
+	github.com/Ignaciojeria/ioc v1.0.1
 	github.com/caarlos0/env/v11 v11.4.0
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/coreos/go-oidc/v3 v3.17.0

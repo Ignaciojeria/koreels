@@ -37,57 +37,59 @@ func (c *ChatCompletionClient) Generate(ctx context.Context, systemPrompt, userP
 
 	modelName := "gemini-2.5-pro"
 
-	// Match the structured output for beats
-	schema := &genai.Schema{
-		Type: genai.TypeObject,
-		Properties: map[string]*genai.Schema{
-			"beats": {
-				Type: genai.TypeArray,
-				Items: &genai.Schema{
-					Type: genai.TypeObject,
-					Properties: map[string]*genai.Schema{
-						"id": {Type: genai.TypeInteger},
-						"voice": {
-							Type: genai.TypeObject,
-							Properties: map[string]*genai.Schema{
-								"text": {Type: genai.TypeString},
-							},
-							Required: []string{"text"},
-						},
-						"subtitle": {
-							Type: genai.TypeObject,
-							Properties: map[string]*genai.Schema{
-								"placement": {Type: genai.TypeString},
-								"animation": {Type: genai.TypeString},
-								"lines": {
-									Type: genai.TypeArray,
-									Items: &genai.Schema{
-										Type: genai.TypeObject,
-										Properties: map[string]*genai.Schema{
-											"text": {Type: genai.TypeString},
-											"emphasis": {
-												Type:  genai.TypeArray,
-												Items: &genai.Schema{Type: genai.TypeString},
-											},
-										},
-										Required: []string{"text", "emphasis"},
-									},
-								},
-							},
-							Required: []string{"placement", "animation", "lines"},
-						},
-					},
-					Required: []string{"id", "voice", "subtitle"},
-				},
-			},
-		},
-		Required: []string{"beats"},
-	}
-
 	config := &genai.GenerateContentConfig{
 		SystemInstruction: &genai.Content{Parts: []*genai.Part{genai.NewPartFromText(systemPrompt)}},
-		ResponseMIMEType:  "application/json",
-		ResponseSchema:    schema,
+	}
+
+	if responseFormat != nil {
+		// Match the structured output for beats
+		schema := &genai.Schema{
+			Type: genai.TypeObject,
+			Properties: map[string]*genai.Schema{
+				"beats": {
+					Type: genai.TypeArray,
+					Items: &genai.Schema{
+						Type: genai.TypeObject,
+						Properties: map[string]*genai.Schema{
+							"id": {Type: genai.TypeInteger},
+							"voice": {
+								Type: genai.TypeObject,
+								Properties: map[string]*genai.Schema{
+									"text": {Type: genai.TypeString},
+								},
+								Required: []string{"text"},
+							},
+							"subtitle": {
+								Type: genai.TypeObject,
+								Properties: map[string]*genai.Schema{
+									"placement": {Type: genai.TypeString},
+									"animation": {Type: genai.TypeString},
+									"lines": {
+										Type: genai.TypeArray,
+										Items: &genai.Schema{
+											Type: genai.TypeObject,
+											Properties: map[string]*genai.Schema{
+												"text": {Type: genai.TypeString},
+												"emphasis": {
+													Type:  genai.TypeArray,
+													Items: &genai.Schema{Type: genai.TypeString},
+												},
+											},
+											Required: []string{"text", "emphasis"},
+										},
+									},
+								},
+								Required: []string{"placement", "animation", "lines"},
+							},
+						},
+						Required: []string{"id", "voice", "subtitle"},
+					},
+				},
+			},
+			Required: []string{"beats"},
+		}
+		config.ResponseMIMEType = "application/json"
+		config.ResponseSchema = schema
 	}
 
 	contents := []*genai.Content{
