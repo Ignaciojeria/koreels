@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"koreels/internal/reelgen/application/ports/in"
 	"koreels/internal/reelgen/application/ports/out"
@@ -24,7 +23,8 @@ func NewGenerateAudioUseCase(client out.TTSClient) in.GenerateAudioExecutor {
 
 func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudioRequest) (in.GenerateAudioResponse, error) {
 	resp := in.GenerateAudioResponse{
-		Beats: req.Beats,
+		VoiceConfig: req.VoiceConfig,
+		Beats:       req.Beats,
 	}
 
 	var voiceOpts *out.VoiceOptions
@@ -35,14 +35,21 @@ func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudio
 			Style:    req.VoiceConfig.Style,
 		}
 	}
+
+	var partialFailures []in.BeatFailure
 	for i := range resp.Beats {
 		beat := &resp.Beats[i]
 		if beat.Voice.Text == "" {
 			continue
 		}
+		// Reintento: si el beat ya tiene audio URL, no volver a generar (hidratar con lo que ya vino).
+		if beat.Voice.Audio != nil && beat.Voice.Audio.URL != "" {
+			continue
+		}
 		res, err := u.client.GenerateSpeech(ctx, beat.Voice.Text, req.ProviderAPIKey, voiceOpts)
 		if err != nil {
-			return in.GenerateAudioResponse{}, fmt.Errorf("beat %d: %w", beat.ID, err)
+			partialFailures = append(partialFailures, in.BeatFailure{BeatID: beat.ID, Error: err.Error()})
+			continue
 		}
 		beat.Voice.Audio = &in.Audio{
 			URL:      res.URL,
@@ -50,5 +57,6 @@ func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudio
 		}
 	}
 
+	resp.PartialFailures = partialFailures
 	return resp, nil
 }

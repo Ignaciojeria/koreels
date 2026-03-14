@@ -58,6 +58,7 @@ func (u *generateScenesUseCase) Execute(ctx context.Context, req in.GenerateScen
 	}
 
 	return in.GenerateScenesResponse{
+		VoiceConfig:     req.VoiceConfig,
 		Audio:           req.Audio,
 		VisualDirection: visualDir,
 		Beats:           req.Beats,

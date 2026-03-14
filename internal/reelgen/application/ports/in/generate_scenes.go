@@ -2,20 +2,22 @@ package in
 
 import "context"
 
-// GenerateScenesRequest es el body original: audio (voice) + beats. Opcionalmente visual_direction. Se hidrata con scenes en la respuesta.
+// GenerateScenesRequest es el body original: audio (voice) + beats. Opcionalmente visual_direction y voiceConfig (para pipeline).
 type GenerateScenesRequest struct {
-	Audio            *ConcatAudioOutput `json:"audio,omitempty"`
-	VisualDirection  *VisualDirection  `json:"visual_direction,omitempty"`
-	Beats            []Beat            `json:"beats"`
-	ProviderAPIKey   string            `json:"-"` // Opcional; si viene por header, se usa para generar con LLM.
-}
-
-// GenerateScenesResponse devuelve el mismo body (audio + beats + visual_direction) hidratado con el plan de escenas.
-type GenerateScenesResponse struct {
+	VoiceConfig     *VoiceConfig       `json:"voiceConfig,omitempty"`
 	Audio           *ConcatAudioOutput `json:"audio,omitempty"`
 	VisualDirection *VisualDirection   `json:"visual_direction,omitempty"`
 	Beats           []Beat             `json:"beats"`
-	Scenes          []Scene           `json:"scenes"`
+	ProviderAPIKey  string             `json:"-"` // Opcional; si viene por header, se usa para generar con LLM.
+}
+
+// GenerateScenesResponse devuelve el mismo body (voiceConfig + audio + beats + visual_direction) hidratado con el plan de escenas.
+type GenerateScenesResponse struct {
+	VoiceConfig     *VoiceConfig       `json:"voiceConfig,omitempty"`
+	Audio           *ConcatAudioOutput `json:"audio,omitempty"`
+	VisualDirection *VisualDirection   `json:"visual_direction,omitempty"`
+	Beats           []Beat             `json:"beats"`
+	Scenes          []Scene            `json:"scenes"`
 }
 
 // VisualDirection estilo global para todo el reel (consistencia visual).

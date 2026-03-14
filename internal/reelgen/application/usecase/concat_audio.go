@@ -80,6 +80,7 @@ func (u *concatAudioUseCase) Execute(ctx context.Context, req in.ConcatAudioRequ
 	}
 
 	return in.ConcatAudioResponse{
+		VoiceConfig: req.VoiceConfig,
 		Audio: in.ConcatAudioOutput{
 			Voice: in.AudioTrack{
 				URL:      url,

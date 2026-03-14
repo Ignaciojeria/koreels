@@ -20,7 +20,8 @@ import (
 )
 
 const ttsModel = "gemini-2.5-flash-preview-tts"
-const defaultVoice = "Sadachbia"
+const defaultVoice = "Kore"      // masculina, Firm; para femenina/Upbeat usar "Puck"
+const defaultLanguage = "es-MX"  // español latino por defecto; enviar "es-ES" para España
 const bytesPerSecond = 24000 * 2 // PCM s16le 24kHz mono
 
 var _ = ioc.Register(NewTTSClient)
@@ -66,7 +67,7 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 		return nil, fmt.Errorf("text is required and cannot be empty")
 	}
 
-	lang := "es"
+	lang := defaultLanguage // español latino por defecto; usar "es-ES" para España
 	voiceName := defaultVoice
 	style := ""
 	if opts != nil {
@@ -144,32 +145,47 @@ func (c *ttsClient) synthesizeToPCM(ctx context.Context, genaiClient *genai.Clie
 }
 
 func buildTTSPrompt(lang, style, text string) string {
-	// Normalize "es-ES", "en-US" -> "es", "en" for the switch
-	if i := strings.Index(lang, "-"); i > 0 {
-		lang = lang[:i]
-	}
 	lang = strings.ToLower(strings.TrimSpace(lang))
-	base := "Say in Spanish"
-	switch lang {
-	case "en":
-		base = "Say in English"
-	case "pt":
-		base = "Say in Portuguese"
-	case "fr":
-		base = "Say in French"
-	case "de":
-		base = "Say in German"
-	case "it":
-		base = "Say in Italian"
-	case "ja":
-		base = "Say in Japanese"
-	}
+	// BCP-47: "es-ES", "es-MX", "en-US" → idioma + variante para mejor pronunciación y modulación
+	base := languageInstruction(lang)
 	if style != "" {
 		style = strings.TrimSpace(style)
 		style = strings.TrimSuffix(style, ":")
-		return base + ", " + style + ": " + text
+		return base + " " + style + ". " + text
 	}
 	return base + " " + text
+}
+
+// languageInstruction devuelve la instrucción de idioma para el prompt TTS.
+// Ser explícito con el idioma y la modulación mejora pronunciación y entonación.
+func languageInstruction(lang string) string {
+	// Variantes de español para que el modelo module mejor
+	if strings.HasPrefix(lang, "es") {
+		if lang == "es-es" || strings.HasPrefix(lang, "es-es") {
+			return "Speak in Spanish (Spain). Use clear, natural intonation and modulation."
+		}
+		if lang == "es-mx" || lang == "es-ar" || lang == "es-co" || lang == "es-cl" || strings.Contains(lang, "es-") {
+			return "Speak in Spanish (Latin American). Use clear, natural intonation and modulation."
+		}
+		return "Speak in Spanish with clear, natural intonation and modulation."
+	}
+	// Otros idiomas
+	switch {
+	case strings.HasPrefix(lang, "en"):
+		return "Speak in English with clear, natural intonation and modulation."
+	case strings.HasPrefix(lang, "pt"):
+		return "Speak in Portuguese with clear, natural intonation and modulation."
+	case strings.HasPrefix(lang, "fr"):
+		return "Speak in French with clear, natural intonation and modulation."
+	case strings.HasPrefix(lang, "de"):
+		return "Speak in German with clear, natural intonation and modulation."
+	case strings.HasPrefix(lang, "it"):
+		return "Speak in Italian with clear, natural intonation and modulation."
+	case strings.HasPrefix(lang, "ja"):
+		return "Speak in Japanese with clear, natural intonation and modulation."
+	default:
+		return "Speak with clear, natural intonation and modulation."
+	}
 }
 
 func pcmToWAV(pcm []byte, sampleRate, numChannels, bitsPerSample int) []byte {
