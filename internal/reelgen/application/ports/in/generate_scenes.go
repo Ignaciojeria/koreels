@@ -30,12 +30,16 @@ type VisualDirection struct {
 	AspectRatio  string   `json:"aspect_ratio,omitempty"`  // ej. "9:16"
 }
 
-// Scene agrupa beats consecutivos con un prompt de video y opcional cámara/transición.
+// Scene agrupa beats consecutivos con prompt de video, duración calculada y slot para el asset generado.
+// Listo para Remotion: duration a la vista; asset_url se hidrata cuando el video esté listo (async).
 type Scene struct {
-	BeatIDs       []int          `json:"beat_ids"`
-	VideoPrompt   string         `json:"video_prompt"`              // Frase corta para el modelo de generación de video (solo texto).
-	Camera        *CameraConfig  `json:"camera,omitempty"`          // Opcional: plano y movimiento.
-	TransitionOut *TransitionOut `json:"transition_out,omitempty"`
+	ID             int            `json:"id"`                        // ID de escena para tracking y paralelización
+	BeatIDs        []int          `json:"beat_ids"`
+	Duration       float64        `json:"duration"`                 // Suma de duraciones de los beats (evita que el renderer recalcule)
+	VideoPrompt    string         `json:"video_prompt"`             // Frase para el modelo de generación de video
+	AssetURL       string         `json:"asset_url,omitempty"`      // Se llena al hidratar con el video generado (proceso async)
+	Camera         *CameraConfig  `json:"camera,omitempty"`
+	TransitionOut  *TransitionOut `json:"transition_out,omitempty"`
 }
 
 // CameraConfig sugiere plano y movimiento para la escena.

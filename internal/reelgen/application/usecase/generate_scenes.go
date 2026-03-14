@@ -44,11 +44,15 @@ func (u *generateScenesUseCase) Execute(ctx context.Context, req in.GenerateScen
 	for i, beatIDs := range groups {
 		videoPrompt := ""
 		if u.chatClient != nil && req.ProviderAPIKey != "" {
-			videoPrompt = u.generateVideoPrompt(ctx, req.Beats, beatIDs, visualDir, req.ProviderAPIKey)
+			videoPrompt = u.generateVideoPrompt(ctx, req.Beats, beatIDs, visualDir, i+1, len(groups), req.ProviderAPIKey)
 		}
+		duration := u.sceneDuration(req.Beats, beatIDs)
 		s := in.Scene{
+			ID:          i + 1,
 			BeatIDs:     beatIDs,
+			Duration:    duration,
 			VideoPrompt: videoPrompt,
+			AssetURL:    "",
 			Camera:      defaultCameraForScene(i, len(groups)),
 		}
 		if i < len(groups)-1 {
@@ -159,8 +163,25 @@ func (u *generateScenesUseCase) generateVisualDirection(ctx context.Context, bea
 	return dir
 }
 
+// scenePositionHint devuelve un hint de posición en el reel para que el LLM varíe el prompt (opening/middle/closing).
+func scenePositionHint(sceneIndex, totalScenes int) string {
+	if totalScenes <= 0 {
+		return ""
+	}
+	position := "middle"
+	if totalScenes == 1 {
+		position = "single scene"
+	} else if sceneIndex == 1 {
+		position = "opening"
+	} else if sceneIndex == totalScenes {
+		position = "closing"
+	}
+	return fmt.Sprintf("Position in reel: scene %d of %d (%s). ", sceneIndex, totalScenes, position)
+}
+
 // generateVideoPrompt genera una sola frase de texto para el modelo de video (nunca JSON).
-func (u *generateScenesUseCase) generateVideoPrompt(ctx context.Context, beats []in.Beat, beatIDs []int, visualDir *in.VisualDirection, apiKey string) string {
+// sceneIndex y totalScenes permiten inyectar posición en el reel (opening/middle/closing) para variar los prompts.
+func (u *generateScenesUseCase) generateVideoPrompt(ctx context.Context, beats []in.Beat, beatIDs []int, visualDir *in.VisualDirection, sceneIndex, totalScenes int, apiKey string) string {
 	byID := make(map[int]in.Beat)
 	for _, b := range beats {
 		byID[b.ID] = b
@@ -194,8 +215,9 @@ func (u *generateScenesUseCase) generateVideoPrompt(ctx context.Context, beats [
 			globalContext = "Global visual: " + strings.Join(parts, ", ") + ". "
 		}
 	}
-	systemPrompt := `You are a prompt writer for AI video generation. Output ONLY one short sentence in English (max 25 words) describing the visual for this clip. No JSON, no quotes, no markdown, no explanation. Just the sentence.`
-	userPrompt := globalContext + "Scene narration: " + sceneText
+	positionHint := scenePositionHint(sceneIndex, totalScenes)
+	systemPrompt := `You are a prompt writer for AI video generation. Output ONLY one short sentence in English (max 25 words) describing the visual for this clip. No JSON, no quotes, no markdown, no explanation. Just the sentence. Vary the visual according to the scene position in the reel (e.g. hook at start, detail in middle, payoff at end).`
+	userPrompt := globalContext + positionHint + "Scene narration: " + sceneText
 	resp, err := u.chatClient.Generate(ctx, systemPrompt, userPrompt, nil, apiKey)
 	if err != nil || len(resp.Choices) == 0 {
 		return ""
