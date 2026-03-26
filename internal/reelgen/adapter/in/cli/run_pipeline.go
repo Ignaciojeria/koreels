@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"koreels/internal/reelgen/application/ports/in"
 	"koreels/internal/shared/configuration"
@@ -58,10 +59,20 @@ func RunPipeline(
 
 	fmt.Println(string(output))
 
+	outputDir := conf.OUTPUT_DIR
+	if outputDir == "" {
+		outputDir = "."
+	}
+	jsonPath := filepath.Join(outputDir, "pipeline-output.json")
+	if err := os.WriteFile(jsonPath, output, 0o644); err != nil {
+		return fmt.Errorf("write output JSON to %s: %w", jsonPath, err)
+	}
+
 	obs.Logger.Info("cli_pipeline_complete",
 		"audio_url", resp.Audio.Voice.URL,
 		"audio_duration", resp.Audio.Voice.Duration,
 		"beats", len(resp.Beats),
+		"json_output", jsonPath,
 	)
 
 	return nil

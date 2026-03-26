@@ -73,17 +73,7 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 		}
 		style = opts.Style
 	}
-
-	var promptCtx *ttscore.PromptContext
-	if opts != nil && opts.FullScript != "" {
-		promptCtx = &ttscore.PromptContext{
-			FullScript: opts.FullScript,
-			BeatIndex:  opts.BeatIndex,
-			TotalBeats: opts.TotalBeats,
-			PrevText:   opts.PrevText,
-		}
-	}
-	promptText := ttscore.BuildTTSPrompt(lang, style, text, promptCtx)
+	promptText := ttscore.BuildTTSPrompt(lang, style, text)
 
 	pcmBytes, err := ttscore.SynthesizeToPCM(ctx, client, promptText, voiceName)
 	if err != nil {
