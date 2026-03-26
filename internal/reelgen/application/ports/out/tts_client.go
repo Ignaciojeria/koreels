@@ -12,6 +12,7 @@ type VoiceOptions struct {
 	Language string // BCP-47, ej. "es-ES", "en-US"
 	Voice    string // nombre de voz, ej. "Sadachbia", "Kore"
 	Style    string // instrucción de entrega, ej. "energetically and quickly"
+	BeatID   int    // ID del beat para nombrar archivos de salida
 }
 
 type TTSClient interface {

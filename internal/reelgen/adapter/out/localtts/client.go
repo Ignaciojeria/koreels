@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"koreels/internal/reelgen/adapter/out/ttscore"
 	"koreels/internal/reelgen/application/ports/out"
@@ -86,7 +85,11 @@ func (c *localTTSClient) GenerateSpeech(ctx context.Context, text string, apiKey
 	durationSeconds := float64(len(pcmBytes)) / float64(ttscore.BytesPerSecond)
 	wavBytes := ttscore.PcmToWAV(pcmBytes, 24000, 1, 16)
 
-	fileName := fmt.Sprintf("beat_%d.wav", time.Now().UnixNano())
+	beatID := 0
+	if opts != nil {
+		beatID = opts.BeatID
+	}
+	fileName := fmt.Sprintf("beat_%d.wav", beatID)
 	filePath := filepath.Join(c.outputDir, fileName)
 	if err := os.WriteFile(filePath, wavBytes, 0o644); err != nil {
 		return nil, fmt.Errorf("write wav to %s: %w", filePath, err)

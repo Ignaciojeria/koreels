@@ -27,15 +27,6 @@ func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudio
 		Beats:       req.Beats,
 	}
 
-	var voiceOpts *out.VoiceOptions
-	if req.VoiceConfig != nil {
-		voiceOpts = &out.VoiceOptions{
-			Language: req.VoiceConfig.Language,
-			Voice:    req.VoiceConfig.Voice,
-			Style:    req.VoiceConfig.Style,
-		}
-	}
-
 	var partialFailures []in.BeatFailure
 	for i := range resp.Beats {
 		beat := &resp.Beats[i]
@@ -45,6 +36,16 @@ func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudio
 		if beat.Voice.Audio != nil && beat.Voice.Audio.URL != "" {
 			continue
 		}
+
+		voiceOpts := &out.VoiceOptions{
+			BeatID: beat.ID,
+		}
+		if req.VoiceConfig != nil {
+			voiceOpts.Language = req.VoiceConfig.Language
+			voiceOpts.Voice = req.VoiceConfig.Voice
+			voiceOpts.Style = req.VoiceConfig.Style
+		}
+
 		res, err := u.client.GenerateSpeech(ctx, beat.Voice.Text, req.ProviderAPIKey, voiceOpts)
 		if err != nil {
 			partialFailures = append(partialFailures, in.BeatFailure{BeatID: beat.ID, Error: err.Error()})

@@ -2,7 +2,7 @@
     "voiceConfig": {
         "language": "es-MX",
         "voice": "Sadachbia",
-        "style": "fast and energetically"
+        "style": "Energetic and confident. High projection without shouting. Punchy consonants. Use rising and falling intonation to emphasize key words"
     },
     "scriptText": "Hice una aplicación que transforma un guion en un reel listo para publicar.\nEscribres tu guion.\nLa aplicación genera el audio automáticamente.\nAnaliza el contenido.\nDetecta las frases más relevantes. y prepara el contenido para un reel listo para publicar",
     "languageCode": "es-ES",

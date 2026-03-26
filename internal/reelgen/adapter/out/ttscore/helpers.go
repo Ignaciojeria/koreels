@@ -11,7 +11,7 @@ import (
 )
 
 
-const TTSModel = "gemini-2.5-pro-preview-tts"
+const TTSModel = "gemini-2.5-flash-preview-tts"
 const DefaultVoice = "Kore"
 const DefaultLanguage = "es-MX"
 const BytesPerSecond = 24000 * 2 // PCM s16le 24kHz mono
@@ -52,40 +52,58 @@ func SynthesizeToPCM(ctx context.Context, client *genai.Client, promptText strin
 
 func BuildTTSPrompt(lang, style, text string) string {
 	lang = strings.ToLower(strings.TrimSpace(lang))
-	base := LanguageInstruction(lang)
+	langName := languageName(lang)
+
+	var b strings.Builder
+
+	b.WriteString("# AUDIO PROFILE: Narrator\n")
+	b.WriteString("## \"Social Media Reel Narrator\"\n\n")
+
+	b.WriteString("## THE SCENE: Recording Studio\n")
+	fmt.Fprintf(&b, "A professional podcast studio with a high-end condenser microphone. The narrator is recording a short-form social media reel in %s. The energy is focused and engaging.\n\n", langName)
+
+	b.WriteString("### DIRECTOR'S NOTES\n")
+
 	if style != "" {
-		style = strings.TrimSpace(style)
-		style = strings.TrimSuffix(style, ":")
-		return base + " " + style + ". " + text
+		fmt.Fprintf(&b, "Style: %s.\n", strings.TrimSuffix(strings.TrimSpace(style), ":"))
+	} else {
+		b.WriteString("Style: Confident, engaging, and dynamic. Use a vocal smile.\n")
 	}
-	return base + " " + text
+
+	b.WriteString("Pacing: Speak at a fast, consistent pace throughout. No pauses at the start. Keep the tempo steady and energetic like a professional short-form content creator.\n")
+	fmt.Fprintf(&b, "Accent: Natural %s accent.\n\n", langName)
+
+	b.WriteString("#### TRANSCRIPT\n")
+	b.WriteString(text)
+
+	return b.String()
 }
 
-func LanguageInstruction(lang string) string {
+func languageName(lang string) string {
 	if strings.HasPrefix(lang, "es") {
 		if lang == "es-es" || strings.HasPrefix(lang, "es-es") {
-			return "Speak in Spanish (Spain). Use clear, natural intonation and modulation."
+			return "Spanish (Spain)"
 		}
-		if lang == "es-mx" || lang == "es-ar" || lang == "es-co" || lang == "es-cl" || strings.Contains(lang, "es-") {
-			return "Speak in Spanish (Latin American). Use clear, natural intonation and modulation."
+		if strings.Contains(lang, "es-") {
+			return "Spanish (Latin American)"
 		}
-		return "Speak in Spanish with clear, natural intonation and modulation."
+		return "Spanish"
 	}
 	switch {
 	case strings.HasPrefix(lang, "en"):
-		return "Speak in English with clear, natural intonation and modulation."
+		return "English"
 	case strings.HasPrefix(lang, "pt"):
-		return "Speak in Portuguese with clear, natural intonation and modulation."
+		return "Portuguese (Brazilian)"
 	case strings.HasPrefix(lang, "fr"):
-		return "Speak in French with clear, natural intonation and modulation."
+		return "French"
 	case strings.HasPrefix(lang, "de"):
-		return "Speak in German with clear, natural intonation and modulation."
+		return "German"
 	case strings.HasPrefix(lang, "it"):
-		return "Speak in Italian with clear, natural intonation and modulation."
+		return "Italian"
 	case strings.HasPrefix(lang, "ja"):
-		return "Speak in Japanese with clear, natural intonation and modulation."
+		return "Japanese"
 	default:
-		return "Speak with clear, natural intonation and modulation."
+		return "the appropriate language"
 	}
 }
 
