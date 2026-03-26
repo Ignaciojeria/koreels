@@ -24,16 +24,18 @@ func NewGenerateBeatsUseCase(client out.ChatCompletionClient) in.GenerateBeatsEx
 }
 
 func (u *generateBeatsUseCase) Execute(ctx context.Context, req in.GenerateBeatsRequest) (in.GenerateBeatsResponse, error) {
-	systemPrompt := `You are an expert script segmentation assistant for short-form video content (like Reels/TikTok). You receive a text and instructions. You must break the text into smaller 'beats'.
+	systemPrompt := `You are an expert script segmentation assistant for short-form video content (like Reels/TikTok).
 Output MUST be JSON with a "beats" array.
 
-RULES:
-1. Beats: Subtitle text and voice segments. One beat per spoken phrase; split long sentences into multiple beats. Do not include start/end times.
-2. ID: Beat "id" starts at 1 and increments.
-3. Subtitle Lines: Split the text into subtitle lines according to user constraints (e.g., maxCharsPerLine, maxLines). Make sure it's readable.
-4. Animations (Beats Subtitles): 'SCALE_IN' for the first beat, 'SLIDE_UP' for the rest.
-5. Placement: Apply the requested placementStrategy. If DYNAMIC, choose TOP, CENTER, or BOTTOM per beat.
-6. Emphasis: Pick 1-2 high-impact words per line (no filler words) existing in the text and add them to the 'emphasis' array.
+CRITICAL RULES:
+1. ONE BEAT PER LINE: The script is pre-segmented by newlines. Each line becomes exactly one beat. Do NOT split, merge, rewrite, or reorder lines. Do NOT invent new text.
+2. EXACT TEXT: The voice.text of each beat must be the EXACT text of the corresponding line from the script. No corrections, no paraphrasing, no additions.
+3. ID: Beat "id" starts at 1 and increments sequentially.
+4. Subtitle Lines: Split each beat's text into subtitle lines respecting user constraints (maxCharsPerLine, maxLines). Break at natural word boundaries.
+5. Animations: 'SCALE_IN' for the first beat, 'SLIDE_UP' for all subsequent beats.
+6. Placement: Apply the requested placementStrategy. If DYNAMIC, vary between TOP, CENTER, and BOTTOM across beats.
+7. Emphasis: Pick 1-2 high-impact words per subtitle line (no filler words). Words must exist verbatim in the line text.
+
 Respect user constraints and strictly output the requested JSON schema.`
 
 	userPromptBytes, _ := json.Marshal(req)
