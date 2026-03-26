@@ -24,6 +24,8 @@ type Beat struct {
 	ID       int      `json:"id"`
 	Voice    Voice    `json:"voice"`
 	Subtitle Subtitle `json:"subtitle"`
+	Prompt   string   `json:"prompt,omitempty"`
+	VideoURL string   `json:"video_url,omitempty"`
 }
 
 type Voice struct {

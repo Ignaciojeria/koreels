@@ -1,0 +1,15 @@
+{
+    "voiceConfig": {
+        "language": "es-MX",
+        "voice": "Sadachbia",
+        "style": "fast and energetically"
+    },
+    "scriptText": "Hice una aplicación que transforma un guion en un reel listo para publicar.\nEscribres tu guion.\nLa aplicación genera el audio automáticamente.\nAnaliza el contenido.\nDetecta las frases más relevantes. y prepara el contenido para un reel listo para publicar",
+    "languageCode": "es-ES",
+    "subtitle": {
+        "style": "CINEMATIC_DYNAMIC",
+        "placementStrategy": "DYNAMIC",
+        "maxCharsPerLine": 32,
+        "maxLines": 3
+    }
+}

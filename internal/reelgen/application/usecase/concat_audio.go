@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"koreels/internal/reelgen/application/ports/in"
@@ -91,8 +93,14 @@ func (u *concatAudioUseCase) Execute(ctx context.Context, req in.ConcatAudioRequ
 	}, nil
 }
 
-func (u *concatAudioUseCase) downloadWAV(ctx context.Context, url string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+func (u *concatAudioUseCase) downloadWAV(ctx context.Context, rawURL string) ([]byte, error) {
+	if strings.HasPrefix(rawURL, "file://") {
+		return os.ReadFile(strings.TrimPrefix(rawURL, "file://"))
+	}
+	if !strings.HasPrefix(rawURL, "http://") && !strings.HasPrefix(rawURL, "https://") {
+		return os.ReadFile(rawURL)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +110,7 @@ func (u *concatAudioUseCase) downloadWAV(ctx context.Context, url string) ([]byt
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET %s: status %d", url, resp.StatusCode)
+		return nil, fmt.Errorf("GET %s: status %d", rawURL, resp.StatusCode)
 	}
 	return io.ReadAll(resp.Body)
 }

@@ -3,13 +3,13 @@ package geminitts
 import (
 	"bytes"
 	"context"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
 
+	"koreels/internal/reelgen/adapter/out/ttscore"
 	"koreels/internal/reelgen/application/ports/out"
 	"koreels/internal/shared/configuration"
 	"koreels/internal/shared/infrastructure/observability"
@@ -18,11 +18,6 @@ import (
 	"github.com/Ignaciojeria/ioc"
 	"google.golang.org/genai"
 )
-
-const ttsModel = "gemini-2.5-flash-preview-tts"
-const defaultVoice = "Kore"      // masculina, Firm; para femenina/Upbeat usar "Puck"
-const defaultLanguage = "es-MX"  // español latino por defecto; enviar "es-ES" para España
-const bytesPerSecond = 24000 * 2 // PCM s16le 24kHz mono
 
 var _ = ioc.Register(NewTTSClient)
 
@@ -33,7 +28,6 @@ type ttsClient struct {
 	obs         observability.Observability
 }
 
-// NewTTSClient returns a TTSClient that uses Gemini TTS and uploads WAV to GCS, returning the public URL.
 func NewTTSClient(
 	genaiClient *genai.Client,
 	gcsClient *gcs.Client,
@@ -67,8 +61,8 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 		return nil, fmt.Errorf("text is required and cannot be empty")
 	}
 
-	lang := defaultLanguage // español latino por defecto; usar "es-ES" para España
-	voiceName := defaultVoice
+	lang := ttscore.DefaultLanguage
+	voiceName := ttscore.DefaultVoice
 	style := ""
 	if opts != nil {
 		if opts.Language != "" {
@@ -79,18 +73,28 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 		}
 		style = opts.Style
 	}
-	promptText := buildTTSPrompt(lang, style, text)
 
-	pcmBytes, err := c.synthesizeToPCM(ctx, client, promptText, voiceName)
+	var promptCtx *ttscore.PromptContext
+	if opts != nil && opts.FullScript != "" {
+		promptCtx = &ttscore.PromptContext{
+			FullScript: opts.FullScript,
+			BeatIndex:  opts.BeatIndex,
+			TotalBeats: opts.TotalBeats,
+			PrevText:   opts.PrevText,
+		}
+	}
+	promptText := ttscore.BuildTTSPrompt(lang, style, text, promptCtx)
+
+	pcmBytes, err := ttscore.SynthesizeToPCM(ctx, client, promptText, voiceName)
 	if err != nil {
+		c.obs.Logger.ErrorContext(ctx, "error_synthesizing_speech", "error", err)
 		return nil, err
 	}
 
-	durationSeconds := float64(len(pcmBytes)) / float64(bytesPerSecond)
-	wavBytes := pcmToWAV(pcmBytes, 24000, 1, 16)
+	durationSeconds := float64(len(pcmBytes)) / float64(ttscore.BytesPerSecond)
+	wavBytes := ttscore.PcmToWAV(pcmBytes, 24000, 1, 16)
 
 	if c.gcsClient == nil || c.conf.GCS_BUCKET == "" {
-		// No GCS: return a placeholder URL (e.g. for local dev without GCS)
 		return &out.AudioResult{
 			URL:      "",
 			Duration: durationSeconds,
@@ -107,108 +111,6 @@ func (c *ttsClient) GenerateSpeech(ctx context.Context, text string, apiKey stri
 		URL:      publicURL,
 		Duration: durationSeconds,
 	}, nil
-}
-
-func (c *ttsClient) synthesizeToPCM(ctx context.Context, genaiClient *genai.Client, promptText string, voiceName string) ([]byte, error) {
-	contents := []*genai.Content{
-		{Role: "user", Parts: []*genai.Part{{Text: promptText}}},
-	}
-	config := &genai.GenerateContentConfig{
-		ResponseModalities: []string{string(genai.ModalityAudio)},
-		SpeechConfig: &genai.SpeechConfig{
-			VoiceConfig: &genai.VoiceConfig{
-				PrebuiltVoiceConfig: &genai.PrebuiltVoiceConfig{
-					VoiceName: voiceName,
-				},
-			},
-		},
-	}
-	resp, err := genaiClient.Models.GenerateContent(ctx, ttsModel, contents, config)
-	if err != nil {
-		c.obs.Logger.ErrorContext(ctx, "error_synthesizing_speech", "error", err)
-		return nil, fmt.Errorf("synthesizing speech: %w", err)
-	}
-	if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil {
-		return nil, fmt.Errorf("no audio generated (empty response)")
-	}
-	var pcmBytes []byte
-	for _, p := range resp.Candidates[0].Content.Parts {
-		if p != nil && p.InlineData != nil && len(p.InlineData.Data) > 0 {
-			pcmBytes = p.InlineData.Data
-			break
-		}
-	}
-	if len(pcmBytes) == 0 {
-		return nil, fmt.Errorf("synthesized audio is empty")
-	}
-	return pcmBytes, nil
-}
-
-func buildTTSPrompt(lang, style, text string) string {
-	lang = strings.ToLower(strings.TrimSpace(lang))
-	// BCP-47: "es-ES", "es-MX", "en-US" → idioma + variante para mejor pronunciación y modulación
-	base := languageInstruction(lang)
-	if style != "" {
-		style = strings.TrimSpace(style)
-		style = strings.TrimSuffix(style, ":")
-		return base + " " + style + ". " + text
-	}
-	return base + " " + text
-}
-
-// languageInstruction devuelve la instrucción de idioma para el prompt TTS.
-// Ser explícito con el idioma y la modulación mejora pronunciación y entonación.
-func languageInstruction(lang string) string {
-	// Variantes de español para que el modelo module mejor
-	if strings.HasPrefix(lang, "es") {
-		if lang == "es-es" || strings.HasPrefix(lang, "es-es") {
-			return "Speak in Spanish (Spain). Use clear, natural intonation and modulation."
-		}
-		if lang == "es-mx" || lang == "es-ar" || lang == "es-co" || lang == "es-cl" || strings.Contains(lang, "es-") {
-			return "Speak in Spanish (Latin American). Use clear, natural intonation and modulation."
-		}
-		return "Speak in Spanish with clear, natural intonation and modulation."
-	}
-	// Otros idiomas
-	switch {
-	case strings.HasPrefix(lang, "en"):
-		return "Speak in English with clear, natural intonation and modulation."
-	case strings.HasPrefix(lang, "pt"):
-		return "Speak in Portuguese with clear, natural intonation and modulation."
-	case strings.HasPrefix(lang, "fr"):
-		return "Speak in French with clear, natural intonation and modulation."
-	case strings.HasPrefix(lang, "de"):
-		return "Speak in German with clear, natural intonation and modulation."
-	case strings.HasPrefix(lang, "it"):
-		return "Speak in Italian with clear, natural intonation and modulation."
-	case strings.HasPrefix(lang, "ja"):
-		return "Speak in Japanese with clear, natural intonation and modulation."
-	default:
-		return "Speak with clear, natural intonation and modulation."
-	}
-}
-
-func pcmToWAV(pcm []byte, sampleRate, numChannels, bitsPerSample int) []byte {
-	dataSize := len(pcm)
-	byteRate := sampleRate * numChannels * (bitsPerSample / 8)
-	blockAlign := numChannels * (bitsPerSample / 8)
-	fileSize := 4 + 24 + 8 + dataSize
-	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, []byte("RIFF"))
-	binary.Write(buf, binary.LittleEndian, uint32(fileSize))
-	binary.Write(buf, binary.LittleEndian, []byte("WAVE"))
-	binary.Write(buf, binary.LittleEndian, []byte("fmt "))
-	binary.Write(buf, binary.LittleEndian, uint32(16))
-	binary.Write(buf, binary.LittleEndian, uint16(1))
-	binary.Write(buf, binary.LittleEndian, uint16(numChannels))
-	binary.Write(buf, binary.LittleEndian, uint32(sampleRate))
-	binary.Write(buf, binary.LittleEndian, uint32(byteRate))
-	binary.Write(buf, binary.LittleEndian, uint16(blockAlign))
-	binary.Write(buf, binary.LittleEndian, uint16(bitsPerSample))
-	binary.Write(buf, binary.LittleEndian, []byte("data"))
-	binary.Write(buf, binary.LittleEndian, uint32(dataSize))
-	buf.Write(pcm)
-	return buf.Bytes()
 }
 
 func (c *ttsClient) uploadToGCS(ctx context.Context, wavBytes []byte) (publicURL string, err error) {

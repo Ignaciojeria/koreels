@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"strings"
 
 	"koreels/internal/reelgen/application/ports/in"
 	"koreels/internal/reelgen/application/ports/out"
@@ -27,36 +28,69 @@ func (u *generateAudioUseCase) Execute(ctx context.Context, req in.GenerateAudio
 		Beats:       req.Beats,
 	}
 
-	var voiceOpts *out.VoiceOptions
-	if req.VoiceConfig != nil {
-		voiceOpts = &out.VoiceOptions{
-			Language: req.VoiceConfig.Language,
-			Voice:    req.VoiceConfig.Voice,
-			Style:    req.VoiceConfig.Style,
-		}
-	}
+	fullScript := buildFullScript(resp.Beats)
+	totalBeats := countSpeakableBeats(resp.Beats)
 
 	var partialFailures []in.BeatFailure
+	var prevText string
+	speakableIndex := 0
 	for i := range resp.Beats {
 		beat := &resp.Beats[i]
 		if beat.Voice.Text == "" {
 			continue
 		}
-		// Reintento: si el beat ya tiene audio URL, no volver a generar (hidratar con lo que ya vino).
 		if beat.Voice.Audio != nil && beat.Voice.Audio.URL != "" {
+			prevText = beat.Voice.Text
+			speakableIndex++
 			continue
 		}
+
+		voiceOpts := &out.VoiceOptions{
+			FullScript: fullScript,
+			BeatIndex:  speakableIndex,
+			TotalBeats: totalBeats,
+			PrevText:   prevText,
+		}
+		if req.VoiceConfig != nil {
+			voiceOpts.Language = req.VoiceConfig.Language
+			voiceOpts.Voice = req.VoiceConfig.Voice
+			voiceOpts.Style = req.VoiceConfig.Style
+		}
+
 		res, err := u.client.GenerateSpeech(ctx, beat.Voice.Text, req.ProviderAPIKey, voiceOpts)
 		if err != nil {
 			partialFailures = append(partialFailures, in.BeatFailure{BeatID: beat.ID, Error: err.Error()})
+			speakableIndex++
 			continue
 		}
 		beat.Voice.Audio = &in.Audio{
 			URL:      res.URL,
 			Duration: res.Duration,
 		}
+		prevText = beat.Voice.Text
+		speakableIndex++
 	}
 
 	resp.PartialFailures = partialFailures
 	return resp, nil
+}
+
+func buildFullScript(beats []in.Beat) string {
+	var parts []string
+	for _, b := range beats {
+		if b.Voice.Text != "" {
+			parts = append(parts, b.Voice.Text)
+		}
+	}
+	return strings.Join(parts, " ")
+}
+
+func countSpeakableBeats(beats []in.Beat) int {
+	n := 0
+	for _, b := range beats {
+		if b.Voice.Text != "" {
+			n++
+		}
+	}
+	return n
 }

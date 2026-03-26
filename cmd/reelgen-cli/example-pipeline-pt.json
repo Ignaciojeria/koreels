@@ -1,0 +1,15 @@
+{
+    "voiceConfig": {
+        "language": "pt-BR",
+        "voice": "Sadachbia",
+        "style": "fast and energetically"
+    },
+    "scriptText": "Eu criei um aplicativo que transforma um roteiro em um reel pronto para publicar.\nVocê escreve o seu roteiro.\nO aplicativo gera o áudio automaticamente.\nAnalisa o conteúdo.\nDetecta as frases mais relevantes.\nE prepara o conteúdo para um reel pronto para publicar.",
+    "languageCode": "pt-BR",
+    "subtitle": {
+        "style": "CINEMATIC_DYNAMIC",
+        "placementStrategy": "DYNAMIC",
+        "maxCharsPerLine": 32,
+        "maxLines": 3
+    }
+}
