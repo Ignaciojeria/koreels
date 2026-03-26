@@ -15,12 +15,11 @@ import (
 	reelgen "koreels"
 
 	_ "koreels/internal/reelgen/adapter/in/cli"
-	_ "koreels/internal/reelgen/adapter/out/chatcompletion"
+	_ "koreels/internal/reelgen/adapter/out/geminichat"
 	_ "koreels/internal/reelgen/adapter/out/geminiapi"
 	_ "koreels/internal/reelgen/adapter/out/local_uploader"
 	_ "koreels/internal/reelgen/adapter/out/localtts"
 	_ "koreels/internal/reelgen/adapter/out/novideo"
-	_ "koreels/internal/reelgen/adapter/out/qwenapi"
 	_ "koreels/internal/reelgen/application/usecase"
 	_ "koreels/internal/shared/configuration"
 	_ "koreels/internal/shared/infrastructure/ai"
@@ -45,10 +44,6 @@ func main() {
 
 	if *apiKey != "" {
 		os.Setenv("GEMINI_API_KEY", *apiKey)
-	}
-
-	if os.Getenv("SCENE_GENERATOR_PROVIDER") == "" {
-		os.Setenv("SCENE_GENERATOR_PROVIDER", "gemini")
 	}
 
 	if err := ioc.LoadDependencies(); err != nil {

@@ -18,7 +18,7 @@ type Conf struct {
 	GOOGLE_PROJECT_LOCATION string `env:"GOOGLE_PROJECT_LOCATION" envDefault:"us-east1"`
 
 	// Generation Provider
-	SCENE_GENERATOR_PROVIDER string `env:"SCENE_GENERATOR_PROVIDER" envDefault:"qwen"` // "qwen" | "gemini"
+	SCENE_GENERATOR_PROVIDER string `env:"SCENE_GENERATOR_PROVIDER" envDefault:"gemini"` // "qwen" | "gemini"
 
 	// Gemini API
 	GEMINI_API_KEY string `env:"GEMINI_API_KEY"`
