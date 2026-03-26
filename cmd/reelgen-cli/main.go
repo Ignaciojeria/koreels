@@ -47,6 +47,10 @@ func main() {
 		os.Setenv("GEMINI_API_KEY", *apiKey)
 	}
 
+	if os.Getenv("SCENE_GENERATOR_PROVIDER") == "" {
+		os.Setenv("SCENE_GENERATOR_PROVIDER", "gemini")
+	}
+
 	if err := ioc.LoadDependencies(); err != nil {
 		log.Fatal("Failed to load dependencies: ", err)
 	}
